@@ -1,5 +1,4 @@
 import os
-
 from dotenv import load_dotenv
 from llama_index import GPTSimpleVectorIndex, SimpleDirectoryReader
 
