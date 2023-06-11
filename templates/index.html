@@ -11,7 +11,7 @@
       document.getElementById("answer").classList.add("hidden");
 
       fetch(
-        'http://localhost:8000/api/ask/?question=' +
+        'http://localhost:5000/api/ask/?question=' +
         encodeURIComponent(document.getElementById('question').value)
       )
       .then((response) => response.json())
