@@ -11,7 +11,7 @@
       document.getElementById("answer").classList.add("hidden");
 
       fetch(
-        'http://localhost:5000/api/ask/?question=' +
+        '/api/query?question=' +
         encodeURIComponent(document.getElementById('question').value)
       )
       .then((response) => response.json())
@@ -20,7 +20,7 @@
         document.getElementById("loading").classList.add("hidden");
         document.getElementById("answer").classList.remove("hidden");
       })
-      .catch((error) => {
+      .catch((error) => {        
         console.error("Error fetching data:", error);
         document.getElementById("loading").classList.add("hidden");
         document.getElementById("answer").textContent = "Error: Unable to fetch data";
