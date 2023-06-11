@@ -3,4 +3,5 @@ __pycache__
 index_files/*
 data/*
 .env
+.vscode
 ##.env
