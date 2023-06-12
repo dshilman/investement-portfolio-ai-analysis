@@ -3,15 +3,15 @@ import os
 from pathlib import Path
 import logging
 from dotenv import load_dotenv
-from llama_index import VectorStoreIndex, ServiceContext, Document
+from llama_index import SimpleDirectoryReader, VectorStoreIndex, ServiceContext, Document
 import requests
-
+import json
 
 app = Flask(__name__)
 
 
 # Load the index from disk
-load_dotenv()
+# load_dotenv()
 
 index = None
 
@@ -34,10 +34,10 @@ def load_data(portfolio):
     print('calling quote API')
     response = requests.get(url, headers=headers, params=querystring)
 
-    securities = response.json
+    securities = response.json()
     print(f'response {securities}')
 
-    contextArray = []
+    securities_array = []
 
     print('looping thru response')
 
@@ -51,11 +51,11 @@ def load_data(portfolio):
         secDict = {'company name': company, 'security cusip': symbol,
                    'security asset class': asset_class, 'news feed': news_feed}
 
-        contextArray.append(secDict)
+        securities_array.append(secDict)
 
     print('exiting load_data')
 
-    return contextArray
+    return securities_array
 
 
 def get_news_feed(symbol):
@@ -74,7 +74,7 @@ def get_news_feed(symbol):
     print ('calling get news API')
     response = requests.get(url, headers=headers, params=querystring)
 
-    news_feed = response.json['item']
+    news_feed = response.json() ['item']
 
     print ('API response')
 
@@ -88,34 +88,44 @@ def get_news_feed(symbol):
     return articles
 
 
-def create_index(portfolio: str, contextArray):
+def create_index(portfolio: str, securities):
 
     global index
 
     print ("inside create_index")
 
-    stocks = portfolio.split(',')
+    stocks = portfolio.split(", ")
 
-    portfolio_text = f"My invetsment portfolion has {len(stocks)} stocks {portfolio}"
-    context_documents_dict = {"portfolio": [Document(portfolio_text)]}
-    docs = []
-    doc = Document().from_dict(context_documents_dict)
-    docs.append(doc)
+    for security in securities:
+        symbol = security['security cusip']
+        company_name = security['company name']
+        stock_asset_class = security['security asset class']
+        news_feed = security['news feed']
 
-    for context in contextArray:
-        context_doc = Document().from_dict(context)
-        docs.append(context_doc)
 
-    index = VectorStoreIndex.from_documents(documents=docs)
+        f = open(f"data/{symbol}.txt", "a")
+        f.write(f"I have {symbol} stock in my investement portfolio\n")
+        f.write(f"Company Name is {company_name}\n")
+        f.write(f"Stock asset class is {stock_asset_class}\n")
+
+        news_feed_s = "\n".join(news_feed)
+        f.write("Company news feed:\n")
+        f.write(news_feed_s)
+        
+        f.close()        
+
+    print ("creating index")
+
+    documents = SimpleDirectoryReader('data').load_data()
+    index = VectorStoreIndex.from_documents(documents)
 
     print ("exiting create_index")
 
 
 def initialise_index():
-    portfolio = {"aapl, ibm, amzn"}
-    dataContext = load_data(portfolio=portfolio)
-
-    create_index(portfolio=portfolio, contextArray=dataContext)
+    portfolio = "aapl, ibm, amzn"
+    data = load_data(portfolio=portfolio)
+    create_index(portfolio=portfolio, securities=data)
 
 
 initialise_index()
@@ -137,7 +147,8 @@ def query():
 
     answer = None
     try:
-        answer = index.query(query_str)
+        query_engine = index.as_query_engine()
+        answer = query_engine.query(query_str)
     except Exception as e:
         print(f"Exception: {e}")
         return jsonify({'answer': e})
@@ -146,4 +157,4 @@ def query():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True, load_dotenv=True)

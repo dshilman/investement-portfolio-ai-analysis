@@ -1,7 +1,7 @@
 __pycache__
 .venv
 index_files/*
-data/*.md
+data/*
 .env
 .vscode
 ##.env
