@@ -6,9 +6,9 @@
   <title>Ask About My Portfolio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    function sendQuestion() {
+    function invokeAPI() {
       document.getElementById("loading").classList.remove("hidden");
-      document.getElementById("answer").classList.add("hidden");
+      document.getElementById("response").classList.add("hidden");
 
       fetch(
         '/api/query?question=' +
@@ -16,15 +16,15 @@
       )
       .then((response) => response.json())
       .then((data) => {
-        document.getElementById("answer").textContent = data.answer;
+        document.getElementById("response").textContent = data.response;
         document.getElementById("loading").classList.add("hidden");
-        document.getElementById("answer").classList.remove("hidden");
+        document.getElementById("response").classList.remove("hidden");
       })
       .catch((error) => {        
         console.error("Error fetching data:", error);
         document.getElementById("loading").classList.add("hidden");
-        document.getElementById("answer").textContent = "Error: Unable to fetch data: "+ error;
-        document.getElementById("answer").classList.remove("hidden");
+        document.getElementById("response").textContent = "Error: Unable to fetch data: "+ error;
+        document.getElementById("response").classList.remove("hidden");
       });
     }
   </script>
@@ -42,8 +42,8 @@
 <body class="bg-gray-100 min-h-screen">
   <div class="container mx-auto py-8">
     <div class="bg-white shadow-lg rounded-lg p-8">
-      <h1 class="text-3xl font-bold mb-4">Ask a Question</h1>
-      <textarea id="answer" class="w-full h-64 p-4 bg-gray-100 mb-4" readonly></textarea>
+      <h1 class="text-3xl font-bold mb-4">Ask About My Portfolio</h1>
+      <textarea id="response" class="w-full h-64 p-4 bg-gray-100 mb-4" readonly></textarea>
       <!-- Loading message -->
       <!-- Loading spinner -->
       <div
@@ -54,10 +54,8 @@
         <input id="question" type="text" placeholder="Type your question here" class="flex-grow p-4 border rounded-lg">
         <button
           class="bg-blue-500 text-white py-3 px-6 rounded-lg"
-          onclick="sendQuestion()"
-        >
-          Ask
-        </button>
+          onclick="invokeAPI()"
+        >Tell Me What you Think</button>
       </div>
       <div class="htmx-indicator h-2 w-2 bg-blue-500 invisible rounded-full"></div>
     </div>
