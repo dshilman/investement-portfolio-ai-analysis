@@ -1,12 +1,17 @@
 import os
 
 from dotenv import load_dotenv
-from llama_index import GPTSimpleVectorIndex, QuestionAnswerPrompt, download_loader
+from llama_index import VectorStoreIndex, download_loader
 
 
 load_dotenv()
+
+urls = []
+data_source = None
+
 SimpleWebPageReader = download_loader("SimpleWebPageReader")
 
 loader = SimpleWebPageReader()
-documents = loader.load_data(urls=['https://testdriven.io/blog/django-custom-user-model/'])
-index = GPTSimpleVectorIndex(documents)
+documents = loader.load_data(urls=urls)
+index = VectorStoreIndex(documents)
+index.save_to_disk(f'./index_files/index_{data_source}.json')

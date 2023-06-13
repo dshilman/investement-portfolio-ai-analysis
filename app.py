@@ -14,7 +14,10 @@ app = Flask(__name__)
 # load_dotenv()
 
 index = None
-
+headers = {
+        "X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),
+        "X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')
+    }
 # set up the index, either load it from disk to create it on the fly
 
 
@@ -22,14 +25,9 @@ def load_data(portfolio):
 
     print('inside load_data()')
 
-    url = "https://mboum-finance.p.rapidapi.com/qu/quote"
+    url = os.environ.get('QUOTE_API_URL')
 
     querystring = {"symbol": portfolio}
-
-    headers = {
-        "X-RapidAPI-Key": "cc0fa5785dmshe4af69ddd9fbcc6p16321fjsn145f158f15b5",
-        "X-RapidAPI-Host": "mboum-finance.p.rapidapi.com"
-    }
 
     print('calling quote API')
     response = requests.get(url, headers=headers, params=querystring)
@@ -62,28 +60,22 @@ def get_news_feed(symbol):
 
     print('inside get_news_feed')
 
-    url = "https://mboum-finance.p.rapidapi.com/ne/news/"
+    url = os.environ.get('NEWS_API_URL')
 
     querystring = {"symbol": symbol}
 
-    headers = {
-        "X-RapidAPI-Key": "cc0fa5785dmshe4af69ddd9fbcc6p16321fjsn145f158f15b5",
-        "X-RapidAPI-Host": "mboum-finance.p.rapidapi.com"
-    }
-
-    print ('calling get news API')
+    print('calling get news API')
     response = requests.get(url, headers=headers, params=querystring)
 
-    news_feed = response.json() ['item']
+    news_feed = response.json()['item']
 
-    print ('API response')
-
+    print('API response')
 
     articles = []
     for article in news_feed:
         articles.append(article['description'])
 
-    print ('exiting get_news_feed')
+    print('exiting get_news_feed')
 
     return articles
 
@@ -92,16 +84,13 @@ def create_index(portfolio: str, securities):
 
     global index
 
-    print ("inside create_index")
-
-    stocks = portfolio.split(", ")
+    print("inside create_index")
 
     for security in securities:
         symbol = security['security cusip']
         company_name = security['company name']
         stock_asset_class = security['security asset class']
         news_feed = security['news feed']
-
 
         f = open(f"data/{symbol}.txt", "a")
         f.write(f"I have {symbol} stock in my investement portfolio\n")
@@ -111,15 +100,15 @@ def create_index(portfolio: str, securities):
         news_feed_s = "\n".join(news_feed)
         f.write("Company news feed:\n")
         f.write(news_feed_s)
-        
-        f.close()        
 
-    print ("creating index")
+        f.close()
+
+    print("creating index")
 
     documents = SimpleDirectoryReader('data').load_data()
     index = VectorStoreIndex.from_documents(documents)
 
-    print ("exiting create_index")
+    print("exiting create_index")
 
 
 def initialise_index():

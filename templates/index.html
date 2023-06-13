@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Question and Answer</title>
+  <title>Ask About My Portfolio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     function sendQuestion() {
@@ -23,7 +23,7 @@
       .catch((error) => {        
         console.error("Error fetching data:", error);
         document.getElementById("loading").classList.add("hidden");
-        document.getElementById("answer").textContent = "Error: Unable to fetch data";
+        document.getElementById("answer").textContent = "Error: Unable to fetch data: "+ error;
         document.getElementById("answer").classList.remove("hidden");
       });
     }

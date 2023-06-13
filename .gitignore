@@ -2,6 +2,4 @@ __pycache__
 .venv
 index_files/*
 data/*
-.env
 .vscode
-##.env
