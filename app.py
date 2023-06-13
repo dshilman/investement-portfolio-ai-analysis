@@ -1,11 +1,12 @@
-from flask import Flask, request, render_template, jsonify
+import json
+import logging
 import os
 from pathlib import Path
-import logging
-from dotenv import load_dotenv
-from llama_index import SimpleDirectoryReader, VectorStoreIndex, ServiceContext, Document
+
 import requests
-import json
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request
+from llama_index import SimpleDirectoryReader, VectorStoreIndex
 
 app = Flask(__name__)
 
@@ -15,13 +16,13 @@ app = Flask(__name__)
 
 index = None
 headers = {
-        "X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),
-        "X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')
-    }
+    "X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),
+    "X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')
+}
 # set up the index, either load it from disk to create it on the fly
 
 
-def load_data(portfolio):
+def load_stock_data(portfolio):
 
     print('inside load_data()')
 
@@ -33,7 +34,9 @@ def load_data(portfolio):
     response = requests.get(url, headers=headers, params=querystring)
 
     securities = response.json()
-    print(f'response {securities}')
+
+    print('Quote API response:')
+    print(json.dumps(securities, indent=2))
 
     securities_array = []
 
@@ -44,7 +47,8 @@ def load_data(portfolio):
         symbol = security['symbol']
         asset_class = security['quoteType']
 
-        news_feed = get_news_feed(symbol)
+        print (f'Calling market news API for {symbol}')
+        news_feed = get_stock_news_feed(symbol)
 
         secDict = {'company name': company, 'security cusip': symbol,
                    'security asset class': asset_class, 'news feed': news_feed}
@@ -56,7 +60,7 @@ def load_data(portfolio):
     return securities_array
 
 
-def get_news_feed(symbol):
+def get_stock_news_feed(symbol):
 
     print('inside get_news_feed')
 
@@ -64,12 +68,12 @@ def get_news_feed(symbol):
 
     querystring = {"symbol": symbol}
 
-    print('calling get news API')
     response = requests.get(url, headers=headers, params=querystring)
 
     news_feed = response.json()['item']
 
-    print('API response')
+    print(f"Market News API response for {symbol}:")
+    print(json.dumps(news_feed, indent=2))
 
     articles = []
     for article in news_feed:
@@ -80,41 +84,47 @@ def get_news_feed(symbol):
     return articles
 
 
-def create_index(portfolio: str, securities):
+def create_data_files(securities):
+
+    print("inside create_data_files")
+
+    for security in securities:
+        create_data_file(security=security)
+
+    print("exiting create_data_files")
+
+def create_data_file(security: dict):
+        
+    symbol = security['security cusip']
+    company_name = security['company name']
+    stock_asset_class = security['security asset class']
+    news_feed = security['news feed']
+
+    f = open(f"data/{symbol}.txt", "a")
+    f.write(f"I have {symbol} stock in my investement portfolio\n")
+    f.write(f"Company Name is {company_name}\n")
+    f.write(f"Stock asset class is {stock_asset_class}\n")
+
+    news_feed_s = "\n\n".join(news_feed)
+    f.write("Company news feed:\n")
+    f.write(news_feed_s)
+
+    f.close()
+
+def create_index():
 
     global index
 
     print("inside create_index")
-
-    for security in securities:
-        symbol = security['security cusip']
-        company_name = security['company name']
-        stock_asset_class = security['security asset class']
-        news_feed = security['news feed']
-
-        f = open(f"data/{symbol}.txt", "a")
-        f.write(f"I have {symbol} stock in my investement portfolio\n")
-        f.write(f"Company Name is {company_name}\n")
-        f.write(f"Stock asset class is {stock_asset_class}\n")
-
-        news_feed_s = "\n".join(news_feed)
-        f.write("Company news feed:\n")
-        f.write(news_feed_s)
-
-        f.close()
-
-    print("creating index")
-
     documents = SimpleDirectoryReader('data').load_data()
     index = VectorStoreIndex.from_documents(documents)
-
-    print("exiting create_index")
-
+    print("existing create_index")
 
 def initialise_index():
-    portfolio = "aapl, ibm, amzn"
-    data = load_data(portfolio=portfolio)
-    create_index(portfolio=portfolio, securities=data)
+    portfolio = "aapl"
+    data = load_stock_data(portfolio=portfolio)
+    create_data_files(securities=data)
+    create_index()
 
 
 initialise_index()
@@ -134,15 +144,17 @@ def query():
     if not query_str:
         return jsonify({"error": "Please provide a question."})
 
-    answer = None
+    response = None
     try:
+
         query_engine = index.as_query_engine()
-        answer = query_engine.query(query_str)
+        response = query_engine.query(query_str).response
+    
     except Exception as e:
         print(f"Exception: {e}")
-        return jsonify({'answer': e})
+        return jsonify({'response': e})
 
-    return jsonify({'answer': answer.response})
+    return jsonify({'response': response})
 
 
 if __name__ == '__main__':
