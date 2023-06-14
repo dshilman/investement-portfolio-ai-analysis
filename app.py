@@ -19,7 +19,8 @@ headers = {
     "X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),
     "X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')
 }
-# set up the index, either load it from disk to create it on the fly
+
+path = "/data"
 
 
 def load_stock_data(portfolio):
@@ -87,11 +88,20 @@ def get_stock_news_feed(symbol):
 def create_data_files(securities):
 
     print("inside create_data_files")
+    
+    create_data_folder()
 
     for security in securities:
         create_data_file(security=security)
 
     print("exiting create_data_files")
+
+def create_data_folder():
+    
+    path = "data"
+    isExist = os.path.exists(path)
+    if not isExist:
+        os.makedirs(path)
 
 def create_data_file(security: dict):
         
@@ -100,7 +110,13 @@ def create_data_file(security: dict):
     stock_asset_class = security['security asset class']
     news_feed = security['news feed']
 
-    f = open(f"data/{symbol}.txt", "a")
+    file_path = f"{path}/{symbol}.txt"
+    file_exists = os.path.isfile(file_path)
+    if file_exists:
+        os.remove(file_path)
+
+
+    f = open(file_path, "a")
     f.write(f"I have {symbol} stock in my investement portfolio\n")
     f.write(f"Company Name is {company_name}\n")
     f.write(f"Stock asset class is {stock_asset_class}\n")
@@ -121,7 +137,7 @@ def create_index():
     print("existing create_index")
 
 def initialise_index():
-    portfolio = "aapl, amzn, ibm"
+    portfolio = "aapl, amzn, ibm, tsla"
     data = load_stock_data(portfolio=portfolio)
     create_data_files(securities=data)
     create_index()
