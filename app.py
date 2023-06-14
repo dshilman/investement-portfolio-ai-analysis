@@ -47,7 +47,7 @@ def load_stock_data(portfolio):
         symbol = security['symbol']
         asset_class = security['quoteType']
 
-        print (f'Calling market news API for {symbol}')
+        print(f'Calling market news API for {symbol}')
         news_feed = get_stock_news_feed(symbol)
 
         secDict = {'company name': company, 'security cusip': symbol,
@@ -93,8 +93,9 @@ def create_data_files(securities):
 
     print("exiting create_data_files")
 
+
 def create_data_file(security: dict):
-        
+
     symbol = security['security cusip']
     company_name = security['company name']
     stock_asset_class = security['security asset class']
@@ -111,6 +112,7 @@ def create_data_file(security: dict):
 
     f.close()
 
+
 def create_index():
 
     global index
@@ -120,14 +122,15 @@ def create_index():
     index = VectorStoreIndex.from_documents(documents)
     print("existing create_index")
 
+
 def initialise_index():
-    portfolio = "aapl, amzn, ibm"
+    portfolio = "aapl, amzn, ibm, tsla"
     data = load_stock_data(portfolio=portfolio)
     create_data_files(securities=data)
     create_index()
 
 
-#initialise_index()
+initialise_index()
 
 
 @app.route('/')
@@ -149,7 +152,7 @@ def query():
 
         query_engine = index.as_query_engine()
         response = query_engine.query(query_str).response
-    
+
     except Exception as e:
         print(f"Exception: {e}")
         return jsonify({'response': e})
