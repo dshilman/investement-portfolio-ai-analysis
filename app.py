@@ -121,7 +121,7 @@ def create_index():
     print("existing create_index")
 
 def initialise_index():
-    portfolio = "aapl"
+    portfolio = "aapl, amzn, ibm"
     data = load_stock_data(portfolio=portfolio)
     create_data_files(securities=data)
     create_index()
