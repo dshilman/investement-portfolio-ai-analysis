@@ -52,10 +52,11 @@
       ></div>
       <div class="flex items-center space-x-4">
         <input id="question" type="text" placeholder="Type your question here" class="flex-grow p-4 border rounded-lg">
-        <button
-          class="bg-blue-500 text-white py-3 px-6 rounded-lg"
-          onclick="invokeAPI()"
-        >Tell Me What You Think</button>
+      </div>
+      <div class="htmx-indicator h-4 w-2 bg-blue-500 invisible rounded-full"></div>
+      <div class="flex items-center space-x-4">
+        <button class="bg-blue-500 text-white py-3 px-6 rounded-lg"
+          onclick="invokeAPI()">Tell Me What You Think</button>
       </div>
       <div class="htmx-indicator h-2 w-2 bg-blue-500 invisible rounded-full"></div>
     </div>

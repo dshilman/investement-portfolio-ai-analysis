@@ -127,7 +127,7 @@ def initialise_index():
     create_index()
 
 
-initialise_index()
+#initialise_index()
 
 
 @app.route('/')
