@@ -2,7 +2,8 @@ import os
 
 import requests
 from dotenv import load_dotenv
-from llama_index import SimpleWebPageReader, VectorStoreIndex, download_loader
+from llama_index import Document, StorageContext, VectorStoreIndex
+from llama_index.node_parser.simple import SimpleNodeParser
 
 load_dotenv()
 
@@ -10,21 +11,22 @@ load_dotenv()
 def create_index():
 
     tickers = "AAPL, IBM, TSLA, AMZN"
-    article_links = get_stock_news_feed(tickers)
-    create_index_from_web(article_links=article_links)
+    articles = get_stock_news_feed(tickers)
+    create_index_from_articles(articles=articles)
 
 
-def create_index_from_web(article_links):
+def create_index_from_articles(articles):
 
     path = "indexed_files"
-    data_source = "web_index"
+    data_source = "api_index"
 
-    SimpleWebPageReader = download_loader("SimpleWebPageReader")
-    loader = SimpleWebPageReader()
+    documents = []
+    for article in articles:
+        documents.append(Document(article))
 
-    documents = loader.load_data(urls=article_links)
+    nodes = SimpleNodeParser().get_nodes_from_documents(documents)
 
-    index = VectorStoreIndex().from_documents(documents=documents)
+    index = VectorStoreIndex(nodes)
     index.storage_context.persist(f'./{path}/{data_source}')
 
 
@@ -49,7 +51,7 @@ def get_stock_news_feed(tickers):
 
     articles = []
     for article in news_feed:
-        articles.append(article['link'])
+        articles.append(article['description'])
 
     print('exiting get_news_feed')
 

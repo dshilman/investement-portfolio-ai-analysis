@@ -6,7 +6,8 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
-from llama_index import SimpleDirectoryReader, VectorStoreIndex
+from llama_index import (SimpleDirectoryReader, StorageContext,
+                         VectorStoreIndex, load_index_from_storage)
 
 app = Flask(__name__)
 
@@ -15,135 +16,27 @@ app = Flask(__name__)
 # load_dotenv()
 
 index = None
-headers = {
-    "X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),
-    "X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')
-}
 
-path = "/data"
-
-
-def load_stock_data(portfolio):
-
-    print('inside load_data()')
-
-    url = os.environ.get('QUOTE_API_URL')
-
-    querystring = {"symbol": portfolio}
-
-    print('calling quote API')
-    response = requests.get(url, headers=headers, params=querystring)
-
-    securities = response.json()
-
-    print('Quote API response:')
-    print(json.dumps(securities, indent=2))
-
-    securities_array = []
-
-    print('looping thru response')
-
-    for security in securities:
-        company = security['shortName']
-        symbol = security['symbol']
-        asset_class = security['quoteType']
-
-        print (f'Calling market news API for {symbol}')
-        news_feed = get_stock_news_feed(symbol)
-
-        secDict = {'company name': company, 'security cusip': symbol,
-                   'security asset class': asset_class, 'news feed': news_feed}
-
-        securities_array.append(secDict)
-
-    print('exiting load_data')
-
-    return securities_array
-
-
-def get_stock_news_feed(symbol):
-
-    print('inside get_news_feed')
-
-    url = os.environ.get('NEWS_API_URL')
-
-    querystring = {"symbol": symbol}
-
-    response = requests.get(url, headers=headers, params=querystring)
-
-    news_feed = response.json()['item']
-
-    print(f"Market News API response for {symbol}:")
-    print(json.dumps(news_feed, indent=2))
-
-    articles = []
-    for article in news_feed:
-        articles.append(article['description'])
-
-    print('exiting get_news_feed')
-
-    return articles
-
-
-def create_data_files(securities):
-
-    print("inside create_data_files")
-    
-    create_data_folder()
-
-    for security in securities:
-        create_data_file(security=security)
-
-    print("exiting create_data_files")
-
-def create_data_folder():
-    
-    path = "data"
-    isExist = os.path.exists(path)
-    if not isExist:
-        os.makedirs(path)
-
-def create_data_file(security: dict):
-        
-    symbol = security['security cusip']
-    company_name = security['company name']
-    stock_asset_class = security['security asset class']
-    news_feed = security['news feed']
-
-    file_path = f"{path}/{symbol}.txt"
-    file_exists = os.path.isfile(file_path)
-    if file_exists:
-        os.remove(file_path)
-
-
-    f = open(file_path, "a")
-    f.write(f"I have {symbol} stock in my investement portfolio\n")
-    f.write(f"Company Name is {company_name}\n")
-    f.write(f"Stock asset class is {stock_asset_class}\n")
-
-    news_feed_s = "\n\n".join(news_feed)
-    f.write("Company news feed:\n")
-    f.write(news_feed_s)
-
-    f.close()
 
 def create_index():
 
     global index
 
-    print("inside create_index")
-    documents = SimpleDirectoryReader('data').load_data()
-    index = VectorStoreIndex.from_documents(documents)
+    storage_context = StorageContext.from_defaults(
+        persist_dir="./indexed_files/api_index")
+    index = load_index_from_storage(storage_context)
+
     print("existing create_index")
 
+
 def initialise_index():
-    portfolio = "aapl, amzn, ibm, tsla"
-    data = load_stock_data(portfolio=portfolio)
-    create_data_files(securities=data)
+    # portfolio = "aapl, amzn, ibm, tsla"
+    # data = load_stock_data(portfolio=portfolio)
+    # create_data_files(securities=data)
     create_index()
 
 
-#initialise_index()
+initialise_index()
 
 
 @app.route('/')
@@ -165,7 +58,7 @@ def query():
 
         query_engine = index.as_query_engine()
         response = query_engine.query(query_str).response
-    
+
     except Exception as e:
         print(f"Exception: {e}")
         return jsonify({'response': e})

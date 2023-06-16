@@ -1,5 +1,6 @@
 llama-index
 tiktoken
-langchain
+langchain==0.0.188
 python-dotenv
 flask
+html2text
