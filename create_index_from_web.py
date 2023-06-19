@@ -16,16 +16,15 @@ def create_index():
 
 def create_index_from_web(article_links):
 
-    path = "indexed_files"
-    data_source = "web_index"
+    path = "indexed_files/web_index"
 
-    SimpleWebPageReader = download_loader("SimpleWebPageReader")
+    # loader = download_loader("SimpleWebPageReader")
     loader = SimpleWebPageReader()
 
     documents = loader.load_data(urls=article_links)
 
     index = VectorStoreIndex().from_documents(documents=documents)
-    index.storage_context.persist(f'./{path}/{data_source}')
+    index.storage_context.persist(f'./{path}')
 
 
 def get_stock_news_feed(tickers):
