@@ -1,9 +1,3 @@
-import json
-import logging
-import os
-from pathlib import Path
-
-import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from llama_index import (SimpleDirectoryReader, StorageContext,
@@ -11,12 +5,7 @@ from llama_index import (SimpleDirectoryReader, StorageContext,
 
 app = Flask(__name__)
 
-
-# Load the index from disk
-# load_dotenv()
-
 index = None
-
 
 def create_index():
 
