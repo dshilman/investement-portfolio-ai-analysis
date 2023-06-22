@@ -63,7 +63,6 @@ def get_stock_news_feed(tickers):
 
     articles = []
     for article in news_feed:
-        # pub_date = article['pubDate']
         datetime_utc = datetime.strptime(
             article['pubDate'], '%a, %d %b %Y %H:%M:%S %z')
         est_datetime = datetime_utc.astimezone(tz=est)
