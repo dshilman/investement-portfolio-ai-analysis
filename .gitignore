@@ -1,0 +1,6 @@
+__pycache__
+.venv
+index_files/*
+data/*
+.vscode
+indexed_files/*
