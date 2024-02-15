@@ -3,5 +3,6 @@ tiktoken
 langchain==0.0.188
 python-dotenv
 flask
+requests
 html2text
 langchain_community
