@@ -1,7 +1,10 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
-from llama_index import (SimpleDirectoryReader, StorageContext,
-                         VectorStoreIndex, load_index_from_storage)
+from llama_index.core import (SimpleDirectoryReader, StorageContext,
+                              VectorStoreIndex, load_index_from_storage)
+from llama_index.core.storage.docstore import SimpleDocumentStore
+from llama_index.core.storage.index_store import SimpleIndexStore
+from llama_index.core.vector_stores import SimpleVectorStore
 
 app = Flask(__name__)
 
@@ -10,10 +13,18 @@ index = None
 def create_index():
 
     global index
-
+    
+    # create storage context using default stores
     storage_context = StorageContext.from_defaults(
-        persist_dir="./indexed_files/api_index")
+            persist_dir="./indexed_files/api_index",
+            docstore=SimpleDocumentStore(),
+            vector_store=SimpleVectorStore(),
+            index_store=SimpleIndexStore(),
+            directory_reader=SimpleDirectoryReader())
+
+ 
     index = load_index_from_storage(storage_context)
+
 
     print("existing create_index")
 

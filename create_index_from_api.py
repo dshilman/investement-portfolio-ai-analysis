@@ -1,44 +1,42 @@
-import os
-from datetime import datetime, timedelta
-
-import pytz
+import argparse
 import requests
-from dotenv import load_dotenv
-from llama_index import Document, StorageContext, VectorStoreIndex
-from llama_index.node_parser.simple import SimpleNodeParser
+import html2text
 
-load_dotenv()
+import requests
+from html2text import HTML2Text
+from llama_index.core import Document, VectorStoreIndex
+
+from app_config import config
 
 
-def create_index():
+def create_index(instruments: str):
 
     print('inside create_index()')
-
-    tickers = "AAPL, IBM, TSLA, AMZN"
     articles = []
-    for ticker in tickers.split(','):
+    for ticker in instruments.split(','):
         ticker_articles = get_stock_news_feed(ticker.strip())
-        articles = articles.append(ticker_articles)
+        if len(ticker_articles) > 0:
+            articles = articles + ticker_articles
     
-    create_index_from_articles(articles=articles)
+    create_index_from_articles(articles)
 
     print('exiting create_index()')
 
 
-def create_index_from_articles(articles):
+def create_index_from_articles(data):
 
     print('inside create_index_from_articles()')
 
+    h = html2text.HTML2Text()
+    h.ignore_links = True
+    h.ignore_emphasis = True
+
+    documents = [Document(text = h.handle(t)) for t in data]
+
+    index = VectorStoreIndex.from_documents(documents)
     path = "indexed_files/api_index"
 
-    documents = []
-    for article in articles:
-        documents.append(Document(article))
-
-    nodes = SimpleNodeParser().get_nodes_from_documents(documents)
-
-    index = VectorStoreIndex(nodes)
-    index.storage_context.persist(f'./{path}')
+    index.storage_context.persist(persist_dir = f'./{path}')
 
     print('exiting create_index_from_articles()')
 
@@ -47,41 +45,19 @@ def get_stock_news_feed(ticker):
 
     print('inside get_news_feed(tickers)')
 
-    url = os.environ.get('NEWS_API_URL')
-
-    querystring = {"symbol": ticker}
-
-    headers = {
-        "X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),
-        "X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')
-    }
-    response = requests.get(url, headers=headers, params=querystring)
+    querystring = {"symbol": ticker,"count":"21"}
+    
+    response = requests.get(config.NEWS_API_URL, headers=config.headers, params=querystring)
 
     articles = []
 
-    if 'item' in response.json():
-        news_feed = response.json()['item']
-
-        # print(f"Market News API response for {tickers}:")
-        # print(json.dumps(news_feed, indent=2))
-
-        date_format = "%b-%d-%y %I:%M %p"
-        est = pytz.timezone('US/Eastern')
+    if 'headlines' in response.json():
+        news_feed = response.json()['headlines']
         
         for article in news_feed:
-            datetime_utc = datetime.strptime(
-                article['pubDate'], '%a, %d %b %Y %H:%M:%S %z')
-            est_datetime = datetime_utc.astimezone(tz=est)
-
-            title = article['title']
-            link = article['link']
-            description = article['description']
-            document = f"""Article Title: {title}
-            Published Date: {est_datetime.strftime(date_format)}
-            Article Description: {description}
-            Source: {link}"""
-
-            articles.append(document)
+            summary = article['summary']
+            if ticker in summary:                
+                articles.append(summary)
     else:
         print(f"no articles for {ticker}")
 
@@ -92,4 +68,9 @@ def get_stock_news_feed(ticker):
 
 
 if __name__ == '__main__':
-    create_index()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('instruments', type=str, help='must provide instruments e.g. "AAPL, IBM, TSLA, AMZN"')
+    args = parser.parse_args()
+
+    create_index(args.instruments)
