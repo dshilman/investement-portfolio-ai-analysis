@@ -1,8 +1,8 @@
 llama-index
-tiktoken
-langchain==0.0.188
+# tiktoken
+# langchain
 python-dotenv
 flask
 requests
 html2text
-langchain_community
+# langchain_community

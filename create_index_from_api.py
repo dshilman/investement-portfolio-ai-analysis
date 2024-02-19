@@ -1,13 +1,14 @@
 import argparse
-import requests
-import html2text
 
+import html2text
 import requests
+from dotenv import load_dotenv
 from html2text import HTML2Text
 from llama_index.core import Document, VectorStoreIndex
 
 from app_config import config
 
+load_dotenv()
 
 def create_index(instruments: str):
 

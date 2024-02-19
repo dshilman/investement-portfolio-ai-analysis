@@ -4,3 +4,4 @@ index_files/*
 data/*
 .vscode
 indexed_files/*
+.env

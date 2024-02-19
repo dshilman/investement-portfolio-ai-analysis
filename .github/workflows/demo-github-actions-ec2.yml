@@ -14,7 +14,13 @@ jobs:
       - name: Checkout the files
         uses: actions/checkout@v2
 
-      - name: Deploy to Server 1
+      - name: Create OANDA Config
+        run: |          
+          cat << EOF > .env
+          ${{ secrets.ENV_CONFIG }}
+          EOF
+
+      - name: Deploy to AWS EC2
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
