@@ -14,9 +14,9 @@ jobs:
       - name: Checkout the files
         uses: actions/checkout@v2
 
-      - name: Create env Config
+      - name: Create env config file
         run: |          
-          cat << EOF > .env
+          cat << EOF > '.env'
           ${{ secrets.ENV_CONFIG }}
           EOF
 
