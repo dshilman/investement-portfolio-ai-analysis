@@ -9,7 +9,6 @@ from llama_index.core import Document, VectorStoreIndex
 from app_config import config
 
 load_dotenv()
-
 def create_index(instruments: str):
 
     print('inside create_index()')

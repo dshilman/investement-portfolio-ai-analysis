@@ -16,9 +16,11 @@ jobs:
 
       - name: Create env config file
         run: |          
-          cat << EOF > ./code/env.cfg
-          ${{ secrets.ENV_CONFIG }}
-          EOF
+          python -c "import os; file = open('.env', 'w'); file.write(${{ENV_CONFIG}}); file.close()"
+        shell: bash
+        env:
+          ENV_CONFIG : ${{secrets.ENV_CONFIG}}
+
 
       - name: Deploy to AWS EC2
         uses: easingthemes/ssh-deploy@main
