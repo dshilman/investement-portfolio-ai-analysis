@@ -28,7 +28,7 @@ def create_index_from_articles(data):
 
     print('inside create_index_from_articles()')
 
-    h = html2text.HTML2Text()
+    h = HTML2Text()
     h.ignore_links = True
     h.ignore_emphasis = True
 
