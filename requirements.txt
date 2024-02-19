@@ -3,6 +3,6 @@ llama-index
 # langchain
 python-dotenv
 flask
-requests
+# requests
 html2text
 # langchain_community
