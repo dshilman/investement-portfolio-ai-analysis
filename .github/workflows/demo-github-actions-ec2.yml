@@ -16,7 +16,7 @@ jobs:
 
       - name: Create OANDA Config
         run: |          
-          cat << EOF > .env
+          cat << EOF > ./.env
           ${{ secrets.ENV_CONFIG }}
           EOF
 
