@@ -16,7 +16,7 @@ def create_index():
     
     # create storage context using default stores
     storage_context = StorageContext.from_defaults(
-            persist_dir="./indexed_files/api_index",
+            persist_dir="../indexed_files/api_index",
             docstore=SimpleDocumentStore(),
             vector_store=SimpleVectorStore(),
             index_store=SimpleIndexStore(),

@@ -35,7 +35,7 @@ def create_index_from_articles(data):
     documents = [Document(text = h.handle(t)) for t in data]
 
     index = VectorStoreIndex.from_documents(documents)
-    path = "indexed_files/api_index"
+    path = "../indexed_files/api_index"
 
     index.storage_context.persist(persist_dir = f'./{path}')
 
