@@ -16,7 +16,7 @@ jobs:
 
       - name: Create env config file
         run: |          
-          python3 -c "import os; file = open('./code/.env', 'w'); file.write(os.environ['ENV_CONFIG']); file.close()"
+          python3 -c "import os; file = open('code/.env', 'w'); file.write(os.environ['ENV_CONFIG']); file.close()"
         shell: bash
         env:
           ENV_CONFIG : ${{secrets.ENV_CONFIG}}

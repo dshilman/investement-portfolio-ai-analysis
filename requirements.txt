@@ -6,3 +6,5 @@ flask
 # requests
 html2text
 # langchain_community
+llama-cpp-python
+
